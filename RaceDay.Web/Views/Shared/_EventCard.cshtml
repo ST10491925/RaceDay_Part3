@@ -1,0 +1,28 @@
+@model EventItem
+<article class="event-card h-100">
+    <a asp-controller="Events" asp-action="Detail" asp-route-id="@Model.Id" class="event-card-media" tabindex="-1" aria-hidden="true">
+        @if (!string.IsNullOrWhiteSpace(Model.BannerUrl))
+        {
+            <img src="@Model.BannerUrl" alt="" loading="lazy" />
+        }
+        else
+        {
+            <div class="lane-art"></div>
+        }
+        <span class="type-chip">@(string.IsNullOrWhiteSpace(Model.EventType) ? "Event" : Model.EventType)</span>
+    </a>
+    <div class="event-card-body">
+        <div class="bib-date" aria-hidden="true">
+            <span class="bib-day">@(Model.Date.Year > 1 ? Model.Date.Day.ToString() : "-")</span>
+            <span class="bib-month">@(Model.Date.Year > 1 ? Model.Date.ToString("MMM") : "")</span>
+        </div>
+        <div class="event-card-text">
+            <h3 class="h5 mb-1"><a asp-controller="Events" asp-action="Detail" asp-route-id="@Model.Id">@Model.Name</a></h3>
+            <ul class="meta-list">
+                <li>@Icons.Get("calendar", 16)<span>@Format.DateTimeFull(Model.Date)</span></li>
+                <li>@Icons.Get("map-pin", 16)<span>@Model.Location</span></li>
+                <li>@Icons.Get("route", 16)<span>@Format.Distance(Model.DistanceKm)</span></li>
+            </ul>
+        </div>
+    </div>
+</article>

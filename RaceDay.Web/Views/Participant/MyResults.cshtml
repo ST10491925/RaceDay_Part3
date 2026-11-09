@@ -1,0 +1,49 @@
+@model List<ResultItem>
+@{
+    ViewData["Title"] = "My Results";
+}
+<h1 class="h2 mb-1">My Results</h1>
+<p class="text-muted mb-4">Your race history. Results appear here once the organiser publishes them.</p>
+
+@if (Model.Count == 0)
+{
+    <div class="empty-state">
+        @Icons.Get("trophy", 32)
+        <h2 class="h5">No results yet</h2>
+        <p>After an event you entered concludes, your finish time and position will be listed here.</p>
+        <a class="btn btn-primary" asp-controller="Participant" asp-action="MyEvents">View my events</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var r in Model)
+        {
+            <div class="col-12 col-lg-6">
+                <article class="result-card">
+                    <div class="result-info">
+                        <h2 class="h5 mb-1">@r.EventName</h2>
+                        <p class="text-muted mb-3">@Format.Date(r.EventDate)</p>
+                        <dl class="result-facts">
+                            <div><dt>Category</dt><dd>@(string.IsNullOrWhiteSpace(r.CategoryName) ? "Not recorded" : r.CategoryName)</dd></div>
+                            <div><dt>Finish time</dt><dd class="time">@(string.IsNullOrWhiteSpace(r.FinishTime) ? "Not recorded" : r.FinishTime)</dd></div>
+                        </dl>
+                    </div>
+                    <div class="bib" role="img" aria-label="Finished @Format.Ordinal(r.Position)@(r.TotalFinishers.HasValue ? " out of " + r.TotalFinishers.Value + " finishers" : "")">
+                        <span class="bib-pin bib-pin-tl"></span><span class="bib-pin bib-pin-tr"></span>
+                        <span class="bib-pin bib-pin-bl"></span><span class="bib-pin bib-pin-br"></span>
+                        <span class="bib-position">@Format.Ordinal(r.Position)</span>
+                        @if (r.TotalFinishers.HasValue)
+                        {
+                            <span class="bib-total">of @r.TotalFinishers.Value finishers</span>
+                        }
+                        else
+                        {
+                            <span class="bib-total">place</span>
+                        }
+                    </div>
+                </article>
+            </div>
+        }
+    </div>
+}

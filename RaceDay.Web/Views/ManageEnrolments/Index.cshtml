@@ -1,0 +1,71 @@
+@model EnrolmentManagementViewModel
+@{
+    ViewData["Title"] = "Enrolments";
+    var selected = Model.SelectedEventId;
+}
+<h1 class="h2 mb-1">Enrolments</h1>
+<p class="text-muted mb-4">See who has entered each of your events, in which category, and their enrolment status.</p>
+
+<section class="panel mb-4">
+    <form method="get" asp-action="Index" class="row g-3 align-items-end">
+        <div class="col-md-8">
+            <label class="form-label" for="eventId">Event</label>
+            <select class="form-select" id="eventId" name="eventId" data-autosubmit>
+                <option value="">Select an event</option>
+                @foreach (var e in Model.Events)
+                {
+                    <option value="@e.Id" selected="@(selected == e.Id)">@e.Name (@Format.Date(e.Date))</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4"><button class="btn btn-primary w-100" type="submit">Show enrolments</button></div>
+    </form>
+</section>
+
+@if (selected is not > 0)
+{
+    <div class="empty-state">
+        @Icons.Get("users", 32)
+        <h2 class="h5">Select an event</h2>
+        <p>Choose one of your events above to see its participants.</p>
+    </div>
+}
+else if (Model.Enrolments.Count == 0)
+{
+    <div class="empty-state">
+        @Icons.Get("users", 32)
+        <h2 class="h5">No enrolments yet</h2>
+        <p>Nobody has entered this event. Share the event page to get the first entries.</p>
+    </div>
+}
+else
+{
+    <div class="table-card">
+        <div class="table-card-head d-flex justify-content-between">
+            <h2 class="h5 m-0">@Model.Enrolments.Count @(Model.Enrolments.Count == 1 ? "participant" : "participants")</h2>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Participant</th>
+                        <th scope="col">Category</th>
+                        <th scope="col">Enrolled</th>
+                        <th scope="col">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in Model.Enrolments)
+                {
+                    <tr>
+                        <td>@(string.IsNullOrWhiteSpace(e.ParticipantName) ? "Participant" : e.ParticipantName)</td>
+                        <td>@e.CategoryName</td>
+                        <td>@Format.Date(e.EnrolledAt)</td>
+                        <td><partial name="_StatusBadge" model="e.Status" /></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

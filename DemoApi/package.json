@@ -1,0 +1,17 @@
+{
+  "name": "raceday-standin-api",
+  "version": "1.0.0",
+  "description": "Stand-in RaceDay API for running the Part 3 MVC site",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.5.0"
+  }
+}

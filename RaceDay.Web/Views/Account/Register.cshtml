@@ -1,0 +1,51 @@
+@model RegisterForm
+@{
+    ViewData["Title"] = "Create your account";
+}
+<div class="auth-wrap">
+    <div class="auth-card">
+        <h1 class="h2">Create your account</h1>
+        <p class="text-muted">Participant accounts are free. Organiser accounts are set up by an administrator.</p>
+
+        <form asp-action="Register" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+            <div class="row g-3">
+                <div class="col-sm-6">
+                    <label asp-for="FirstName" class="form-label">First name</label>
+                    <input asp-for="FirstName" class="form-control" autocomplete="given-name" required />
+                    <span asp-validation-for="FirstName" class="field-error"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="LastName" class="form-label">Last name</label>
+                    <input asp-for="LastName" class="form-control" autocomplete="family-name" required />
+                    <span asp-validation-for="LastName" class="field-error"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Email" class="form-label">Email address</label>
+                    <input asp-for="Email" class="form-control" autocomplete="email" inputmode="email" required />
+                    <span asp-validation-for="Email" class="field-error"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="Phone" class="form-label">Phone number (optional)</label>
+                    <input asp-for="Phone" class="form-control" autocomplete="tel" inputmode="tel" />
+                    <span asp-validation-for="Phone" class="field-error"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="Password" class="form-label">Password</label>
+                    <input asp-for="Password" class="form-control" autocomplete="new-password" minlength="8" required />
+                    <span asp-validation-for="Password" class="field-error"></span>
+                </div>
+                <div class="col-sm-6">
+                    <label asp-for="ConfirmPassword" class="form-label">Confirm password</label>
+                    <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" required />
+                    <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-signal w-100 btn-lg mt-4">Create account</button>
+        </form>
+
+        <p class="mt-4 mb-0 text-center">Already registered? <a asp-action="Login">Sign in</a></p>
+    </div>
+</div>

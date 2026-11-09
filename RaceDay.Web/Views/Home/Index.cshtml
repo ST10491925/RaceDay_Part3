@@ -1,0 +1,102 @@
+@model HomeViewModel
+@{
+    ViewData["Title"] = "Upcoming events";
+}
+
+<section class="hero" aria-labelledby="hero-title">
+    <div class="hero-lanes" aria-hidden="true"></div>
+    <div class="hero-content">
+        <h1 id="hero-title">Your next start line is on this page.</h1>
+        <p class="lead">Browse upcoming runs and walks, pick your category and enter in a few taps.</p>
+        @if (!Auth.IsAuthenticated)
+        {
+            <div class="d-flex flex-wrap gap-2">
+                <a class="btn btn-signal btn-lg" asp-controller="Account" asp-action="Register">Create a free account</a>
+                <a class="btn btn-outline-light btn-lg" asp-controller="Account" asp-action="Login">Sign in</a>
+            </div>
+        }
+        else if (Auth.IsOrganiser)
+        {
+            <a class="btn btn-signal btn-lg" asp-controller="Organiser" asp-action="Dashboard">Open your dashboard</a>
+        }
+        else
+        {
+            <a class="btn btn-signal btn-lg" asp-controller="Participant" asp-action="MyEvents">See my events</a>
+        }
+    </div>
+</section>
+
+<section class="filter-panel" aria-label="Filter events">
+    <form method="get" asp-controller="Home" asp-action="Index" class="row g-3 align-items-end">
+        <div class="col-12 col-lg-4">
+            <label class="form-label" for="search">Search</label>
+            <input class="form-control" id="search" name="search" value="@Model.Search" placeholder="Event name or town" maxlength="80" />
+        </div>
+        <div class="col-6 col-lg-2">
+            <label class="form-label" for="type">Type</label>
+            <select class="form-select" id="type" name="type">
+                <option value="">All types</option>
+                @foreach (var t in Format.EventTypes)
+                {
+                    <option value="@t" selected="@(string.Equals(Model.Type, t, StringComparison.OrdinalIgnoreCase))">@t</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-lg-2">
+            <label class="form-label" for="category">Category</label>
+            <select class="form-select" id="category" name="category">
+                <option value="">All categories</option>
+                @foreach (var c in Model.Categories)
+                {
+                    <option value="@c.Name" selected="@(string.Equals(Model.Category, c.Name, StringComparison.OrdinalIgnoreCase))">@c.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-lg-2">
+            <label class="form-label" for="maxDistance">Up to (km)</label>
+            <input class="form-control" id="maxDistance" name="maxDistance" type="number" min="1" max="500" step="0.5"
+                   value="@(Model.MaxDistance?.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))" placeholder="Any" />
+        </div>
+        <div class="col-6 col-lg-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary flex-grow-1">@Icons.Get("search", 16) Filter</button>
+            @if (Model.HasFilters)
+            {
+                <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index" aria-label="Clear filters">@Icons.Get("x", 16)</a>
+            }
+        </div>
+    </form>
+</section>
+
+<div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+    <h2 class="h4 m-0">Upcoming events</h2>
+    <span class="text-muted">@Model.Events.Count @(Model.Events.Count == 1 ? "event" : "events")</span>
+</div>
+
+@if (Model.Events.Count == 0)
+{
+    <div class="empty-state">
+        @Icons.Get("flag", 32)
+        @if (Model.HasFilters)
+        {
+            <h3 class="h5">No events match those filters</h3>
+            <p>Widen the distance, or clear the filters to see everything that is coming up.</p>
+            <a class="btn btn-primary" asp-controller="Home" asp-action="Index">Clear filters</a>
+        }
+        else
+        {
+            <h3 class="h5">No upcoming events yet</h3>
+            <p>Organisers are still setting up the next season. Check back soon.</p>
+        }
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        @foreach (var ev in Model.Events)
+        {
+            <div class="col-12 col-md-6 col-xl-4">
+                <partial name="_EventCard" model="ev" />
+            </div>
+        }
+    </div>
+}

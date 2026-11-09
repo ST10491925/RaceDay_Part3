@@ -1,0 +1,18 @@
+services:
+  raceday-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: raceday-web:latest
+    container_name: raceday-web
+    ports:
+      - "8082:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Address of the Part 2 API as seen from inside the container.
+      # Override with: API_BASE_URL=https://your-api-host/ docker compose up --build
+      Api__BaseUrl: ${API_BASE_URL:-http://host.docker.internal:5080/}
+      Api__AllowUntrustedCertificate: ${API_ALLOW_UNTRUSTED_CERT:-true}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

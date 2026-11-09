@@ -1,0 +1,66 @@
+@model ProfilePageViewModel
+@{
+    ViewData["Title"] = "Profile";
+    var f = Model.Form;
+    var initials = (f.FirstName.Length > 0 ? f.FirstName[..1] : "") + (f.LastName.Length > 0 ? f.LastName[..1] : "");
+}
+<h1 class="h2 mb-4">Your profile</h1>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <section class="panel text-center">
+            @if (!string.IsNullOrWhiteSpace(f.ProfileImageUrl))
+            {
+                <img class="avatar avatar-lg" src="@f.ProfileImageUrl" alt="Your profile picture" />
+            }
+            else
+            {
+                <div class="avatar avatar-lg avatar-fallback" role="img" aria-label="No profile picture yet">@initials.ToUpperInvariant()</div>
+            }
+            <h2 class="h5 mt-3 mb-0">@f.FirstName @f.LastName</h2>
+            <p class="text-muted">@f.Email</p>
+
+            <form asp-action="Picture" method="post" enctype="multipart/form-data" class="text-start">
+                <label class="form-label" for="picture">Profile picture</label>
+                <input class="form-control mb-2" type="file" id="picture" name="picture"
+                       accept="image/jpeg,image/png,image/webp" data-max-bytes="5242880" required />
+                <div class="form-text mb-3">JPG, PNG or WebP, up to 5 MB.</div>
+                <button type="submit" class="btn btn-primary w-100">@Icons.Get("upload", 16) Upload picture</button>
+            </form>
+        </section>
+    </div>
+
+    <div class="col-lg-8">
+        <section class="panel">
+            <h2 class="h5 mb-3">Personal information</h2>
+            <form asp-action="Update" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <input type="hidden" asp-for="Form.Email" />
+                <input type="hidden" asp-for="Form.ProfileImageUrl" />
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label asp-for="Form.FirstName" class="form-label">First name</label>
+                        <input asp-for="Form.FirstName" class="form-control" autocomplete="given-name" required />
+                        <span asp-validation-for="Form.FirstName" class="field-error"></span>
+                    </div>
+                    <div class="col-sm-6">
+                        <label asp-for="Form.LastName" class="form-label">Last name</label>
+                        <input asp-for="Form.LastName" class="form-control" autocomplete="family-name" required />
+                        <span asp-validation-for="Form.LastName" class="field-error"></span>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label" for="email-display">Email address</label>
+                        <input id="email-display" class="form-control" value="@f.Email" readonly aria-describedby="email-help" />
+                        <div id="email-help" class="form-text">Your email is your sign-in name and cannot be changed here.</div>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="Form.Phone" class="form-label">Phone number</label>
+                        <input asp-for="Form.Phone" class="form-control" autocomplete="tel" inputmode="tel" />
+                        <span asp-validation-for="Form.Phone" class="field-error"></span>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-signal mt-4">Save changes</button>
+            </form>
+        </section>
+    </div>
+</div>

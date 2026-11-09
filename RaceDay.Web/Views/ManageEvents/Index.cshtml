@@ -1,0 +1,68 @@
+@model List<EventItem>
+@{
+    ViewData["Title"] = "Manage events";
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h1 class="h2 m-0">Events</h1>
+    <a class="btn btn-signal" asp-action="Create">@Icons.Get("plus", 16) Create event</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="empty-state">
+        @Icons.Get("calendar", 32)
+        <h2 class="h5">No events yet</h2>
+        <p>Create an event with a name, date, location and distance. You can add a banner image too.</p>
+        <a class="btn btn-signal" asp-action="Create">Create event</a>
+    </div>
+}
+else
+{
+    <div class="table-card">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Event</th>
+                        <th scope="col">Date</th>
+                        <th scope="col">Location</th>
+                        <th scope="col">Distance</th>
+                        <th scope="col">Type</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var e in Model)
+                {
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center gap-3">
+                                @if (!string.IsNullOrWhiteSpace(e.BannerUrl))
+                                {
+                                    <img class="thumb" src="@e.BannerUrl" alt="" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <div class="thumb lane-art" aria-hidden="true"></div>
+                                }
+                                <span>@e.Name</span>
+                            </div>
+                        </td>
+                        <td>@Format.Date(e.Date)</td>
+                        <td>@e.Location</td>
+                        <td>@Format.Distance(e.DistanceKm)</td>
+                        <td>@e.EventType</td>
+                        <td class="text-end text-nowrap">
+                            <a class="btn btn-outline-secondary btn-sm" asp-action="Edit" asp-route-id="@e.Id">@Icons.Get("pencil", 14) Edit</a>
+                            <form asp-action="Delete" method="post" class="d-inline" data-confirm="Delete @(e.Name)? This cannot be undone.">
+                                <input type="hidden" name="id" value="@e.Id" />
+                                <button type="submit" class="btn btn-outline-danger btn-sm">@Icons.Get("trash", 14) Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

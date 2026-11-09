@@ -1,0 +1,119 @@
+@model CategoryManagementViewModel
+@{
+    ViewData["Title"] = "Categories";
+    var selected = Model.SelectedEventId;
+    var linkedIds = Model.EventCategories.Select(c => c.Id).ToHashSet();
+    var available = Model.AllCategories.Where(c => !linkedIds.Contains(c.Id)).ToList();
+    var isAge = Model.NewCategory.CategoryType != "Distance";
+}
+<h1 class="h2 mb-1">Categories</h1>
+<p class="text-muted mb-4">Choose an event, then add age or distance categories so participants can pick one when they enter.</p>
+
+<section class="panel mb-4">
+    <form method="get" asp-action="Index" class="row g-3 align-items-end">
+        <div class="col-md-8">
+            <label class="form-label" for="eventId">Event</label>
+            <select class="form-select" id="eventId" name="eventId" data-autosubmit>
+                <option value="">Select an event</option>
+                @foreach (var e in Model.Events)
+                {
+                    <option value="@e.Id" selected="@(selected == e.Id)">@e.Name (@Format.Date(e.Date))</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4"><button class="btn btn-primary w-100" type="submit">Show categories</button></div>
+    </form>
+</section>
+
+<div class="row g-4">
+    <div class="col-lg-6">
+        <section class="table-card h-100">
+            <div class="table-card-head"><h2 class="h5 m-0">Categories on this event</h2></div>
+            @if (selected is not > 0)
+            {
+                <p class="p-3 mb-0 text-muted">Select an event to see its categories.</p>
+            }
+            else if (Model.EventCategories.Count == 0)
+            {
+                <p class="p-3 mb-0 text-muted">This event has no categories yet. Add one below.</p>
+            }
+            else
+            {
+                <ul class="list-group list-group-flush">
+                    @foreach (var c in Model.EventCategories)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>@Format.CategoryLabel(c)</span>
+                            <span class="type-pill">@(string.IsNullOrWhiteSpace(c.CategoryType) ? (c.DistanceKm.HasValue ? "Distance" : "Age") : c.CategoryType)</span>
+                        </li>
+                    }
+                </ul>
+            }
+
+            @if (selected is > 0 && available.Count > 0)
+            {
+                <form asp-action="Attach" method="post" class="p-3 border-top">
+                    <input type="hidden" name="eventId" value="@selected" />
+                    <label class="form-label" for="categoryId">Add an existing category</label>
+                    <div class="input-group">
+                        <select class="form-select" id="categoryId" name="categoryId" required>
+                            <option value="">Choose a category</option>
+                            @foreach (var c in available)
+                            {
+                                <option value="@c.Id">@Format.CategoryLabel(c)</option>
+                            }
+                        </select>
+                        <button type="submit" class="btn btn-primary">@Icons.Get("plus", 16) Add</button>
+                    </div>
+                </form>
+            }
+        </section>
+    </div>
+
+    <div class="col-lg-6">
+        <section class="panel h-100">
+            <h2 class="h5 mb-3">Create a new category</h2>
+            <form asp-action="Create" method="post" novalidate>
+                <input type="hidden" name="eventId" value="@selected" />
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                <div class="row g-3">
+                    <div class="col-sm-7">
+                        <label asp-for="NewCategory.Name" class="form-label">Name</label>
+                        <input asp-for="NewCategory.Name" class="form-control" maxlength="80" required />
+                        <span asp-validation-for="NewCategory.Name" class="field-error"></span>
+                    </div>
+                    <div class="col-sm-5">
+                        <label asp-for="NewCategory.CategoryType" class="form-label">Type</label>
+                        <select asp-for="NewCategory.CategoryType" class="form-select" data-category-type>
+                            <option value="Age">Age</option>
+                            <option value="Distance">Distance</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label asp-for="NewCategory.Description" class="form-label">Description (optional)</label>
+                        <input asp-for="NewCategory.Description" class="form-control" maxlength="300" />
+                    </div>
+                    <div class="col-sm-6" data-age-field style="@(isAge ? "" : "display:none")">
+                        <label asp-for="NewCategory.MinAge" class="form-label">Minimum age</label>
+                        <input asp-for="NewCategory.MinAge" type="number" min="0" max="120" class="form-control" />
+                        <span asp-validation-for="NewCategory.MinAge" class="field-error"></span>
+                    </div>
+                    <div class="col-sm-6" data-age-field style="@(isAge ? "" : "display:none")">
+                        <label asp-for="NewCategory.MaxAge" class="form-label">Maximum age</label>
+                        <input asp-for="NewCategory.MaxAge" type="number" min="0" max="120" class="form-control" />
+                        <span asp-validation-for="NewCategory.MaxAge" class="field-error"></span>
+                    </div>
+                    <div class="col-sm-6" data-distance-field style="@(isAge ? "display:none" : "")">
+                        <label asp-for="NewCategory.DistanceKm" class="form-label">Distance (km)</label>
+                        <input asp-for="NewCategory.DistanceKm" type="number" step="0.1" min="0.1" max="500" class="form-control" />
+                        <span asp-validation-for="NewCategory.DistanceKm" class="field-error"></span>
+                    </div>
+                </div>
+                <p class="form-text mt-3">
+                    @(selected is > 0 ? "The new category is added to the selected event automatically." : "Select an event first to add the category to it straight away.")
+                </p>
+                <button type="submit" class="btn btn-signal">Create category</button>
+            </form>
+        </section>
+    </div>
+</div>

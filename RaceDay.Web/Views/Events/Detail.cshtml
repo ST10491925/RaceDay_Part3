@@ -1,0 +1,87 @@
+@model EventDetailViewModel
+@{
+    var ev = Model.Event;
+    ViewData["Title"] = ev.Name;
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+
+<a asp-controller="Home" asp-action="Index" class="back-link">Back to events</a>
+
+<section class="detail-banner">
+    @if (!string.IsNullOrWhiteSpace(ev.BannerUrl))
+    {
+        <img src="@ev.BannerUrl" alt="Banner for @ev.Name" />
+    }
+    else
+    {
+        <div class="lane-art lane-art-lg"></div>
+    }
+</section>
+
+<div class="row g-4 mt-1">
+    <div class="col-lg-7">
+        <h1 class="display-6">@ev.Name</h1>
+        <ul class="meta-list meta-list-lg mb-4">
+            <li>@Icons.Get("calendar", 20)<span>@Format.DateTimeFull(ev.Date)</span></li>
+            <li>@Icons.Get("map-pin", 20)<span>@ev.Location</span></li>
+            <li>@Icons.Get("route", 20)<span>@Format.Distance(ev.DistanceKm) @(string.IsNullOrWhiteSpace(ev.EventType) ? "" : ev.EventType.ToLowerInvariant())</span></li>
+        </ul>
+        <h2 class="h5">About this event</h2>
+        <p class="prose">@ev.Description</p>
+    </div>
+
+    <div class="col-lg-5">
+        <aside class="enter-panel" aria-labelledby="enter-title">
+            <h2 class="h4" id="enter-title">Enter this event</h2>
+
+            @if (!ev.IsUpcoming)
+            {
+                <p class="mb-0">This event has finished, so entries are closed.</p>
+            }
+            else if (!Auth.IsAuthenticated)
+            {
+                <p>Sign in to choose a category and enter.</p>
+                <div class="d-grid gap-2">
+                    <a class="btn btn-signal" asp-controller="Account" asp-action="Login" asp-route-returnUrl="@returnUrl">Sign in to enter</a>
+                    <a class="btn btn-outline-secondary" asp-controller="Account" asp-action="Register">Create an account</a>
+                </div>
+            }
+            else if (Auth.IsOrganiser)
+            {
+                <p class="mb-3">You are signed in as an organiser. Entering events is for participant accounts.</p>
+                <a class="btn btn-outline-secondary" asp-controller="ManageEvents" asp-action="Index">Manage events</a>
+            }
+            else if (Model.MyEnrolment is not null)
+            {
+                <p class="mb-2">You are entered in this event.</p>
+                <dl class="enrol-summary">
+                    <dt>Category</dt><dd>@Model.MyEnrolment.CategoryName</dd>
+                    <dt>Status</dt><dd><partial name="_StatusBadge" model="Model.MyEnrolment.Status" /></dd>
+                </dl>
+                <a class="btn btn-outline-secondary" asp-controller="Participant" asp-action="MyEvents">Manage in My Events</a>
+            }
+            else if (Model.Categories.Count == 0)
+            {
+                <p class="mb-0">The organiser has not added categories yet. Check back soon.</p>
+            }
+            else
+            {
+                <form asp-controller="Events" asp-action="Enter" method="post">
+                    <input type="hidden" name="eventId" value="@ev.Id" />
+                    <fieldset class="mb-3">
+                        <legend class="form-label">Choose your category</legend>
+                        @foreach (var c in Model.Categories)
+                        {
+                            <div class="category-option">
+                                <input class="form-check-input" type="radio" name="eventCategoryId"
+                                       id="cat-@c.EventCategoryId" value="@c.EventCategoryId" required />
+                                <label class="form-check-label" for="cat-@c.EventCategoryId">@Format.CategoryLabel(c)</label>
+                            </div>
+                        }
+                    </fieldset>
+                    <button type="submit" class="btn btn-signal btn-lg w-100">Enter event</button>
+                </form>
+            }
+        </aside>
+    </div>
+</div>

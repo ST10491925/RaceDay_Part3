@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/*.user
+.git/
+.github/
+RaceDay.Web.Tests/
+Part2_API_Additions/
+*.md

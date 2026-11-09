@@ -1,0 +1,104 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+    <h1 class="h2 m-0">Organiser dashboard</h1>
+    <a class="btn btn-signal" asp-controller="ManageEvents" asp-action="Create">@Icons.Get("plus", 16) Create event</a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+        <div class="stat">
+            <span class="stat-value">@Model.TotalEvents</span>
+            <span class="stat-label">Events created</span>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat">
+            <span class="stat-value">@Model.TotalEnrolments</span>
+            <span class="stat-label">Active enrolments</span>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat">
+            <span class="stat-value">@Model.Upcoming.Count</span>
+            <span class="stat-label">Upcoming events</span>
+        </div>
+    </div>
+    <div class="col-6 col-lg-3">
+        <div class="stat">
+            <span class="stat-value">@Model.Rows.Count(r => !r.Event.IsUpcoming)</span>
+            <span class="stat-label">Past events</span>
+        </div>
+    </div>
+</div>
+
+@if (Model.Rows.Count == 0)
+{
+    <div class="empty-state">
+        @Icons.Get("flag", 32)
+        <h2 class="h5">You have not created an event yet</h2>
+        <p>Create your first event, then add categories so participants can enter.</p>
+        <a class="btn btn-signal" asp-controller="ManageEvents" asp-action="Create">Create your first event</a>
+    </div>
+}
+else
+{
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <section class="panel h-100">
+                <h2 class="h5 mb-3">Upcoming dates</h2>
+                @if (Model.Upcoming.Count == 0)
+                {
+                    <p class="text-muted mb-0">No upcoming events. Create one to see it here.</p>
+                }
+                else
+                {
+                    <ol class="date-list">
+                        @foreach (var row in Model.Upcoming)
+                        {
+                            <li>
+                                <div class="bib-date" aria-hidden="true">
+                                    <span class="bib-day">@row.Event.Date.Day</span>
+                                    <span class="bib-month">@row.Event.Date.ToString("MMM")</span>
+                                </div>
+                                <div>
+                                    <a asp-controller="ManageEvents" asp-action="Edit" asp-route-id="@row.Event.Id">@row.Event.Name</a>
+                                    <div class="text-muted small">@row.Event.Date.ToString("dddd HH:mm") at @row.Event.Location</div>
+                                </div>
+                            </li>
+                        }
+                    </ol>
+                }
+            </section>
+        </div>
+
+        <div class="col-lg-7">
+            <section class="table-card h-100">
+                <div class="table-card-head"><h2 class="h5 m-0">Enrolments per event</h2></div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Event</th>
+                                <th scope="col">Date</th>
+                                <th scope="col" class="text-end">Enrolments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var row in Model.Rows)
+                        {
+                            <tr>
+                                <td><a asp-controller="ManageEnrolments" asp-action="Index" asp-route-eventId="@row.Event.Id">@row.Event.Name</a></td>
+                                <td>@Format.Date(row.Event.Date)</td>
+                                <td class="text-end"><span class="count-pill">@row.Enrolments</span></td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </div>
+}

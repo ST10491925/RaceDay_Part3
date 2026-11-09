@@ -1,0 +1,76 @@
+name: RaceDay Part 3 MVC CI
+
+on:
+  push:
+    branches: [ main, part-3 ]
+    paths:
+      - 'RaceDay_Part3/**'
+      - '.github/workflows/dotnet-part3.yml'
+  pull_request:
+    branches: [ main, part-3 ]
+    paths:
+      - 'RaceDay_Part3/**'
+      - '.github/workflows/dotnet-part3.yml'
+
+jobs:
+  validate-structure:
+    name: Validate repository structure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check required Part 3 files exist
+        run: |
+          missing=0
+          for f in \
+            RaceDay_Part3/README.md \
+            RaceDay_Part3/Dockerfile \
+            RaceDay_Part3/docker-compose.yml \
+            RaceDay_Part3/RaceDay.Part3.slnx \
+            RaceDay_Part3/RaceDay.Web/RaceDay.Web.csproj \
+            RaceDay_Part3/RaceDay.Web/Program.cs \
+            RaceDay_Part3/RaceDay.Web/Views/Shared/_Layout.cshtml \
+            RaceDay_Part3/RaceDay.Web.Tests/RaceDay.Web.Tests.csproj
+          do
+            if [ ! -f "$f" ]; then echo "Missing required file: $f"; missing=1; fi
+          done
+          exit $missing
+      - name: Check the MVC project does not reference the database or Azure directly
+        run: |
+          if grep -rIE "Microsoft.EntityFrameworkCore|Azure.Storage|System.Data.SqlClient|Microsoft.Data.SqlClient" RaceDay_Part3/RaceDay.Web --include=*.cs --include=*.csproj; then
+            echo "The MVC project must talk to the Part 2 API only."
+            exit 1
+          fi
+
+  build-and-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    needs: validate-structure
+    defaults:
+      run:
+        working-directory: RaceDay_Part3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet restore RaceDay.Part3.slnx
+      - name: Build
+        run: dotnet build RaceDay.Part3.slnx --no-restore --configuration Release
+      - name: Test
+        run: dotnet test RaceDay.Part3.slnx --no-build --configuration Release --logger "trx;LogFileName=results.trx"
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: part3-test-results
+          path: RaceDay_Part3/**/TestResults/*.trx
+
+  docker-build:
+    name: Build Docker image
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t raceday-web:ci RaceDay_Part3

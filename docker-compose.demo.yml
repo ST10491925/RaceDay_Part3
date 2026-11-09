@@ -1,0 +1,28 @@
+# Runs the MVC site together with the demo API, so nothing else needs to be started.
+# Command: docker compose -f docker-compose.demo.yml up --build
+services:
+  api:
+    build: ./DemoApi
+    container_name: raceday-demo-api
+    ports:
+      - "5080:5080"
+    environment:
+      PORT: "5080"
+      # Address the browser uses to load uploaded images.
+      PUBLIC_URL: http://localhost:5080
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: raceday-demo-web
+    depends_on:
+      - api
+    ports:
+      - "8081:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Api__BaseUrl: http://api:5080/
+      Api__AllowUntrustedCertificate: "false"
+    restart: unless-stopped
