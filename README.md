@@ -1,6 +1,6 @@
 # RaceDay Part 3: MVC Web Application
 
-Author: Sizwe Sigubudu
+Author: Masibonge Mtshali
 Module: PROG6212, Part 3 (Automation of Web Application)
 
 RaceDay Part 3 is an ASP.NET Core MVC web application that provides the front end for the RaceDay running and walking event platform. It contains no database code and never talks to Azure directly. Every operation, including image uploads, goes through the RaceDay Part 2 REST API.
